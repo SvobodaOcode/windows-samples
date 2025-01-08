@@ -24,36 +24,66 @@ public class PreviewApp: SwiftApplication {
     /// application and when you can create a window and display UI.s
     override public func onLaunched(_ args: WinUI.LaunchActivatedEventArgs) {
         let window = Window()
-        window.title = "WinUI3AnimationsPreview"
+        window.title = "WinUI3TreeViewPreview"
 
+        // Create the main layout panel
+        let mainPanel = StackPanel()
+        mainPanel.orientation = .vertical
+        mainPanel.spacing = 10
+        mainPanel.horizontalAlignment = .center
+        mainPanel.verticalAlignment = .center
+
+        // Create TreeView
+        let sampleTreeView = TreeView()
+        loadTreeViewData(treeView: sampleTreeView)
+
+        // Create buttons
+        let myButton = Button()
+        myButton.content = "Click Me"
+        myButton.click.addHandler { _, _ in
+            myButton.content = "Clicked"
+        }
+
+        let secondButton = Button()
+        secondButton.content = "Second Button"
+        secondButton.click.addHandler { _, _ in
+            secondButton.content = "clicked second"
+        }
+
+        // Add controls to panel
+        mainPanel.children.append(sampleTreeView)
+        mainPanel.children.append(myButton)
+        mainPanel.children.append(secondButton)
+
+        // Set window content and activate
+        window.content = mainPanel
         try! window.activate()
+    }
 
-        let animatableButton = Button()
-        animatableButton.content = "Hello World"
+    private func loadTreeViewData(treeView: TreeView) {
+        // Create nodes
+        let rootNode = TreeViewNode()
+        let childNode1 = TreeViewNode()
+        let childNode2 = TreeViewNode()
 
-        animatableButton.pointerEntered.addHandler { [weak self] in
-            guard let self else { return }
-            self.elementPointerEntered(sender: $0, args: $1)
+        // Set content for nodes
+        rootNode.content = "Root"
+        childNode1.content = "Child 1"
+        childNode2.content = "Child 2"
+
+        // Build tree structure
+        rootNode.children.append(childNode1)
+        rootNode.children.append(childNode2)
+
+        // Add root node to TreeView
+        treeView.rootNodes.append(rootNode)
+
+        // Optional: Set up event handlers for TreeView
+        treeView.itemInvoked.addHandler { [weak self] sender, args in
+            if let node = args?.invokedItem as? TreeViewNode {
+                print("Selected node: \(String(describing: node.content))")
+            }
         }
-        animatableButton.pointerExited.addHandler { [weak self] in
-            guard let self else { return }
-            self.elementPointerExited(sender: $0, args: $1)
-        }
-
-        // initialize the animation to scale of 1.0 so that it can be scaled up when first
-        // hovered over. do it on load or else we don't have a compositor ready yet
-        animatableButton.loaded.addHandler { [weak self] _, _ in
-            guard let self else { return }
-            self.springAnimation.finalValue = Vector3(x: 1.0, y: 1.0, z: 1.0)
-        }
-
-        let panel = StackPanel()
-        panel.orientation = .vertical
-        panel.spacing = 10
-        panel.horizontalAlignment = .center
-        panel.verticalAlignment = .center
-        panel.children.append(animatableButton)
-        window.content = panel
     }
 
     lazy var compositor: WinAppSDK.Compositor = WinUI.CompositionTarget.getCompositorForCurrentThread()
